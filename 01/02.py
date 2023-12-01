@@ -20,8 +20,7 @@ for row in rows:
         new = name[:2] + str(i+1) + name[2:]
         row = row.replace(name, new)
     row = re.sub(r'[a-z]','', row)
-    number = int(f'{row[0]}{row[-1]}')
-    total += number
+    total += int(row[0]+row[-1])
 
 
 print(total)
