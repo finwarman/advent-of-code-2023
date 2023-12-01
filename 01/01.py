@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import re
-import math
 
 # ==== INPUT ====
 
@@ -12,11 +11,8 @@ rows = [row.strip() for row in data.split('\n')[:-1]]
 
 # ==== SOLUTION ====
 
-total = 0
+print(sum(
+    int(f'{r[0]}{r[-1]}') for r in (re.sub(r'[a-z]','', row) for row in rows)
+))
 
-for row in rows:
-    row = re.sub(r'[a-z]','', row)
-    number = int(f'{row[0]}{row[-1]}')
-    total += number
-
-print(total)
+# 54159

@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import re
-import math
 
 # ==== INPUT ====
 
@@ -24,4 +23,7 @@ for row in rows:
     number = int(f'{row[0]}{row[-1]}')
     total += number
 
+
 print(total)
+
+# 53866
