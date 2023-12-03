@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import re
-import math
 import numpy as np
 
 # ==== INPUT ====
@@ -10,54 +9,49 @@ def load_input():
     with open(INPUT, 'r', encoding='UTF-8') as file:
         data = file.read()
 
-    rows = [row.strip().replace('.', ' ') for row in data.split('\n')[:-1]]
-    return rows
+    return [row.strip().replace('.', ' ') for row in data.split('\n')[:-1]]
 
 # ==== SOLUTION ====
 
-# find position (row, col, length) of numbers in grid
-def find_matches(array, regex):
+# find (row, col, length, value) of numbers in grid
+def find_matches(arr, regex):
     matches = []
-    for i, text in enumerate(array):
+    for row, text in enumerate(arr):
         for match in regex.finditer(text):
-            start_index = match.start()
+            start_index  = match.start()
             match_length = match.end() - start_index
-            number = int(match.group())
-            matches.append((i, start_index, match_length, number))
+            matches.append((row, start_index, match_length, int(match.group())))
     return matches
 
-def select_squares_with_padding(array, matches):
-    padded_array = np.pad(
-        array, pad_width=1, mode='constant', constant_values=' ',
-    )
+# get subarrays with 1-char border around entire all numbers
+def select_squares_with_padding(arr, num_matches):
+    padded_array = np.pad(arr, pad_width=1, constant_values=' ')
+    sub_squares = []
+    for (row, col, length, _) in num_matches:
+        start_row, end_row = row, (row + 2)
+        start_col, end_col = col, (col + length + 1)
 
-    squares = []
-    for (row, col, length, _) in matches:
-        start_row = row
-        end_row = row + 2
-        start_col = col
-        end_col = col + length + 1
-
-        square = padded_array[start_row:end_row+1, start_col:end_col+1]
-        squares.append(square)
-
-    return squares
+        sqr = padded_array[start_row:end_row+1, start_col:end_col+1]
+        sub_squares.append(sqr)
+    return sub_squares
 
 if __name__ == "__main__":
-    rows = load_input()
+    ROWS  = load_input()
+    TOTAL = 0
 
-    num_re = re.compile(r'\b\d+\b')
-    matches = find_matches(rows, num_re)
+    # find position, length, and a value of all numbers
+    numbers = find_matches(ROWS, re.compile(r'\d+'))
 
-    array = np.array([list(row) for row in rows])
-    squares = select_squares_with_padding(array, matches)
+    # get containing areas for all numbers
+    array = np.array([list(row) for row in ROWS])
+    squares = select_squares_with_padding(array, numbers)
 
-    total = 0
+    # sum all numbers which have a 'symbol' in their containing area
     for i, square in enumerate(squares):
-        flat_string = ''.join(map(str, square.ravel()))
-        if re.search(r'[^0-9 ]', flat_string) is not None:
-            _, _, _, number = matches[i]
-            total += number
+        FLAT_STR = ''.join(map(str, square.ravel()))
+        if re.search(r'[^0-9 ]', FLAT_STR) is not None:
+            _, _, _, number = numbers[i]
+            TOTAL += number
 
-    print(total)
+    print(TOTAL)
     # 528819
