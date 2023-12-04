@@ -34,9 +34,11 @@ while stack:
     card = stack.pop()
     card_score_counts[card] += 1
     wins = winning_counts[card]
-    if wins:
-        to_check = [x for x in range(card+1, min(CARDS, card+wins)+1)]
-        stack.extend(to_check)
+    if wins > 0:
+        end_range = card + wins + 1
+        if end_range > CARDS:
+            end_range = CARDS
+        stack.extend(x for x in range(card+1, end_range))
 
 TOTAL = sum(card_score_counts)
 
