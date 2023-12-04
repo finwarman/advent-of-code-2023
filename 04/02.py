@@ -25,22 +25,19 @@ for card_no, (winning, numbers) in enumerate(rows):
     win_count = len(set.intersection(winning, numbers))
     winning_counts[card_no] = win_count
 
-# map: card numbers -> number of 'hits'
-card_score_counts = np.zeros(CARDS, dtype=int)
+TOTAL = 0
 
 # resolve card counts
 stack = list(range(CARDS))
 while stack:
+    TOTAL += 1
     card = stack.pop()
-    card_score_counts[card] += 1
     wins = winning_counts[card]
     if wins > 0:
         end_range = card + wins + 1
         if end_range > CARDS:
             end_range = CARDS
         stack.extend(x for x in range(card+1, end_range))
-
-TOTAL = sum(card_score_counts)
 
 print(TOTAL)
 
