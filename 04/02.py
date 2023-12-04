@@ -16,7 +16,7 @@ CARDS = len(rows)
 # ==== SOLUTION ====
 
 # map: card numbers -> matching number count
-winning_counts = np.array([0 for _ in range(CARDS)])
+winning_counts = np.zeros(CARDS, dtype=int)
 
 # populate match count map
 for card_no, (winning, numbers) in enumerate(rows):
@@ -26,7 +26,7 @@ for card_no, (winning, numbers) in enumerate(rows):
     winning_counts[card_no] = win_count
 
 # map: card numbers -> number of 'hits'
-card_score_counts = np.array([0 for _ in range(CARDS)])
+card_score_counts = np.zeros(CARDS, dtype=int)
 
 # resolve card counts
 stack = list(range(CARDS))
