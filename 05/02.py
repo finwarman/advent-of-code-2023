@@ -49,6 +49,8 @@ def intersect_range_with_dest_mapping(seed_range, source_range, dest_range):
     else:
         return [None, seed_range, None]
 
+# for each mapping stage determine all possible resulting values
+# (apply mappings, keep leftovers), pass these onto next stage
 processing_inputs = seed_ranges
 for title in titles:
     mapping = title_ranges[title]
@@ -68,6 +70,7 @@ for title in titles:
             result.append(input)
     processing_inputs = result
 
+# determine minimum value in final stage output
 print(min(processing_inputs)[0])
 
 # 60294664
