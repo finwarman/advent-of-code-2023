@@ -23,7 +23,7 @@ for group in groups[1:]:
     title = re.split('\s+', group[0])[0]
     range_data = [[int(x) for x in rng.split()] for rng in group[1:]]
     ranges = [[(range[0], range[0]+range[2]-1), (range[1], range[1]+range[2]-1)] for range in range_data]
-    title_ranges[title] = sorted(ranges, key=lambda x: x[0])
+    title_ranges[title] = ranges
 titles = list(title_ranges.keys())
 
 # given a seed range and a potential mapping, return the adjust destination mapping
@@ -51,8 +51,8 @@ def intersect_range_with_dest_mapping(seed_range, source_range, dest_range):
 
 processing_inputs = seed_ranges
 for title in titles:
-    mapping = sorted(title_ranges[title], key=lambda x: x[1])
-    result = set()
+    mapping = title_ranges[title]
+    result = []
     while processing_inputs:
         input = processing_inputs.pop()
         intersected = False
@@ -61,12 +61,12 @@ for title in titles:
             dest, left, right = intersect_range_with_dest_mapping(input, src, dest)
             if dest:
                 intersected = True
-                result.add(dest)
+                result.append(dest)
                 processing_inputs.extend([x for x in [left, right] if x is not None])
                 break
         if not intersected:
-            result.add(input)
-    processing_inputs = sorted(list(result))
+            result.append(input)
+    processing_inputs = result
 
 print(min(processing_inputs)[0])
 
