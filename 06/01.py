@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import re
-import numpy as np
+import math
+import sys
 
 # ==== INPUT ====
 
@@ -12,23 +13,27 @@ rows = [row.strip() for row in data.split('\n')[:-1]]
 
 # ==== SOLUTION ====
 
+EPS = sys.float_info.epsilon * 10
+
 times        = [int(t) for t in re.split(r'\s+', rows[0])[1:]]
 record_dists = [int(d) for d in re.split(r'\s+', rows[1])[1:]]
 
-winning_counts = []
+def find_bounds(time, record):
+    # coefficients
+    a, b, c = -1, time, -record
+    discriminant = b**2 - 4*a*c
 
-for i in range(len(times)):
-    time = times[i]
-    record = record_dists[i]
-    count = 0
-    for hold_time in range(time):
-        distance = hold_time * (time - hold_time)
-        if distance > record:
-            count += 1
-    winning_counts.append(count)
+    # calculate roots
+    root1 = ((-b + math.sqrt(discriminant)) / (2*a))
+    root2 = ((-b - math.sqrt(discriminant)) / (2*a))
 
+    # get solutions counts
+    lower_bound = math.ceil(min(root1, root2) + EPS)
+    upper_bound = math.floor(max(root1, root2) - EPS)
 
-print(winning_counts)
-print(np.prod(winning_counts))
+    return upper_bound - lower_bound + 1
+
+for i, time in enumerate(times):
+    print(find_bounds(time, record_dists[i]))
 
 # 1083852

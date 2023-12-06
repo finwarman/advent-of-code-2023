@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import re
-import numpy as np
 import math
+import sys
 
 # ==== INPUT ====
 
@@ -12,6 +12,8 @@ with open(INPUT, 'r', encoding='UTF-8') as file:
 rows = [row.strip() for row in data.split('\n')[:-1]]
 
 # ==== SOLUTION ====
+
+EPS = sys.float_info.epsilon * 10
 
 time_input  = [int(t) for t in [''.join(re.split(r'\s+', rows[0])[1:])]][0]
 record_dist = [int(d) for d in [''.join(re.split(r'\s+', rows[1])[1:])]][0]
@@ -29,8 +31,8 @@ def find_bounds(time, record):
     root2 = (-b - math.sqrt(discriminant)) / (2*a)
 
     # get solutions counts
-    lower_bound = math.ceil(min(root1, root2))
-    upper_bound = math.floor(max(root1, root2))
+    lower_bound = math.ceil(min(root1, root2) + EPS)
+    upper_bound = math.floor(max(root1, root2) - EPS)
 
     return upper_bound - lower_bound + 1
 
