@@ -19,7 +19,7 @@ TWO_PAIR        = 60
 ONE_PAIR        = 50
 HIGH_CARD       = 40
 
-CARD_VALUES = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J'][::-1]
+CARD_VALUES = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'][::-1]
 
 def hand_strength(hand):
     assert(len(hand) == 5)
@@ -40,28 +40,6 @@ def hand_strength(hand):
             return ONE_PAIR
     return HIGH_CARD
 
-def get_strongest(hand, index=0, max_strength=float('-inf'), candidates=None):
-    assert len(hand) == 5
-
-    # each 'J' can be any other card in the hand (including 'J')
-    if candidates is None:
-        candidates = list(set(hand))
-
-    # there are no more replacements in this recursion, hand evaluate strength
-    if index >= len(hand):
-        current_value = hand_strength(hand)
-        return max(max_strength, current_value)
-
-    # recursively produce all possible hands for _this_ J
-    if hand[index] == 'J':
-        for value in candidates:
-            new_hand = hand[:index] + [value] + hand[index+1:]
-            max_strength = get_strongest(new_hand, index + 1, max_strength, candidates)
-    else:
-        max_strength = get_strongest(hand, index + 1, max_strength, candidates)
-
-    return max_strength
-
 def hand_sort(hand):
     _, _, strength, card_values = hand
     return tuple([strength] + card_values)
@@ -69,20 +47,17 @@ def hand_sort(hand):
 parsed_hands = []
 for hand, bid in rows:
     hand, bid = list(hand), int(bid)
-    strength = get_strongest(hand)
+    strength = hand_strength(hand)
     card_values = [CARD_VALUES.index(c) for c in hand]
     parsed_hands.append((hand, bid, strength, card_values))
-
 
 sorted_hands = sorted(parsed_hands, key=hand_sort)
 
 total = 0
 for rank, hand in enumerate(sorted_hands):
-    print(hand)
     _, bid, strength, _ = hand
     total += (rank+1) * bid
 
-
 print(total)
 
-# 243101568
+# 241344943
