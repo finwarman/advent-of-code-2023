@@ -13,8 +13,7 @@ rows = [row.strip() for row in data.split('\n')[:-1]]
 
 # ==== SOLUTION ====
 
-left_right_pattern = [(0 if x == 'L' else 1) for x in rows[0]]
-left_right_pointer = 0
+lr_pattern = [(0 if x == 'L' else 1) for x in rows[0]]
 
 location_map = {}
 for row in rows[2:]:
@@ -22,25 +21,24 @@ for row in rows[2:]:
     left, right = left_right[1:-1].split(', ')
     location_map[key] = (left, right)
 
-
 locations = [loc for loc in location_map.keys() if loc[2] == 'A']
 cycles = []
 
+# for each starting location, get number of steps (cycle) from A->Z
 for location in locations:
-    cycle = [location]
-    left_right_pointer = 0
+    counter = 0
     while location[2] != 'Z':
-        left_right = left_right_pattern[left_right_pointer % len(left_right_pattern)]
+        left_right = lr_pattern[counter % len(lr_pattern)]
         location = location_map[location][left_right]
-        left_right_pointer += 1
-        cycle.append(location)
-    cycles.append(cycle)
+        counter += 1
+    cycles.append(counter)
 
+# get the lowest common multiple of all cycle lengths
 def lcm(numbers):
     return reduce(lambda x, y: x * y // math.gcd(x, y), numbers)
 
-# (cycle length - 1) = number of steps
-steps_to_align = lcm([len(cycle)-1 for cycle in cycles])
+steps_to_align = lcm(cycles)
+
 print(steps_to_align)
 
 # 13740108158591
