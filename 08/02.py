@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
-import re
 import math
-from functools import reduce
 
 # ==== INPUT ====
 
@@ -34,10 +32,7 @@ for location in locations:
     cycles.append(counter)
 
 # get the lowest common multiple of all cycle lengths
-def lcm(numbers):
-    return reduce(lambda x, y: x * y // math.gcd(x, y), numbers)
-
-steps_to_align = lcm(cycles)
+steps_to_align = math.lcm(*cycles)
 
 print(steps_to_align)
 
