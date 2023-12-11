@@ -1,8 +1,5 @@
 #! /usr/bin/env python3
-import re
-import math
 import numpy as np
-from collections import defaultdict
 from collections import deque
 
 # ==== INPUT ====
@@ -16,15 +13,17 @@ GRID = np.array([list(row.strip()) for row in data.split('\n')[:-1]])
 
 # ==== SOLUTION ====
 
-# get valid chars in each direction
+# valid chars in each direction
 valid_direction_chars = {
     'up':    ('|', '7', 'F'),
     'down':  ('|', 'L', 'J'),
     'left':  ('-', 'L', 'F'),
     'right': ('-', '7', 'J'),
 }
+
 # map current char to possible directions
 valid_steps = {
+    '.': (),
     '|': ('up',   'down'  ),
     '-': ('left', 'right' ),
     'L': ('up',   'right' ),
@@ -32,24 +31,20 @@ valid_steps = {
     '7': ('down', 'left'  ),
     'F': ('down', 'right' ),
 }
-# map direction to (dx, dy) offset
+
+# map direction name to (dx, dy) offset
 offsets = {
     'up':    ( 0, -1),
     'down':  ( 0,  1),
     'left':  (-1,  0),
     'right': ( 1,  0),
 }
-opposites = {
-    'up':    'down' ,
-    'down':  'up'   ,
-    'left':  'right',
-    'right': 'left' ,
-}
 
-# add tuples (e.g. x,y + offset)
+# add tuples e.g. (x, y) + (dx, dy)
 def add(tuple_a, tuple_b):
     return (tuple_a[0]+tuple_b[0], tuple_a[1]+tuple_b[1])
 
+# get (x, y) positions for each direction name
 def get_neighbours(position):
     return {
         'up':    add(position, offsets['up']),
@@ -58,6 +53,16 @@ def get_neighbours(position):
         'right': add(position, offsets['right']),
     }
 
+# determine only valid char for current position
+def get_starting_char(start_pos):
+    neighbour_chars = {dir: GRID[y][x] for dir, (x, y) in get_neighbours(start_pos).items()}
+    for potential, dirs in valid_steps.items():
+        valid = [char for dir, char in neighbour_chars.items() if dir in dirs and char in valid_direction_chars[dir]]
+        if len(valid) == 2:
+            return potential
+    return None
+
+# for current position, get valid steps from that position
 # [('down', (1, 2, '|')), ('right', (2, 1, '-'))]
 def get_possible_steps(position):
     x, y = position
@@ -74,32 +79,31 @@ def get_possible_steps(position):
 
     return possible_steps
 
-# find start position
+# find and set-up start position
 s_index = np.where(GRID == 'S')
 START_POS  = (s_index[1][0], s_index[0][0])
-START_CHAR = 'F'
 
-x, y = START_POS
-GRID[y][x] = START_CHAR
+GRID[START_POS[1]][START_POS[0]] = get_starting_char(START_POS)
 
 
-visited = {}
-queue = deque([(START_POS, START_CHAR, 0)])  # (x, y), char, dist
-max_dist = 0
-
+# navigate from starting point around the loop
+queue, visited = deque([(START_POS, 0)]), {} # (x, y): dist
 while queue:
-    (x, y), current_char, dist = queue.popleft()
-    if (x, y) not in visited:
-        visited[(x, y)] = dist
+    (x, y), dist = queue.pop()
+    visited[(x, y)] = dist
 
-        possible_steps = get_possible_steps((x, y))
-        if (x, y) == START_POS:
-            possible_steps = [possible_steps[1]]
+    possible_steps = get_possible_steps((x, y))
+    if (x, y) == START_POS: # start in only 1 direction
+        possible_steps = [possible_steps[1]]
 
-        for direction, (new_x, new_y), new_char in possible_steps:
-            if (new_x, new_y) not in visited:
-                queue.append(((new_x, new_y), GRID[new_y][new_x], dist + 1))
+    for _, (new_x, new_y), _ in possible_steps:
+        if (new_x, new_y) not in visited:
+            queue.append(((new_x, new_y), dist + 1))
 
-print((max(visited.values()) + 1) // 2)
+# get loop length and result
+loop_length = max(visited.values()) + 1
+furthest_dist = loop_length // 2
+
+print(furthest_dist)
 
 # 6864
