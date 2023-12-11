@@ -163,6 +163,7 @@ fill_outside_of_loop(main_loop)
 
 # delete added rows and cols
 # (new border doesn't affect count, so is ignored)
+old_grid = GRID.copy()
 for index in range(GRID.shape[0] - 1, -1, -2):
     GRID = np.delete(GRID, index, axis=0)  # delete row
 for index in range(GRID.shape[1] - 1, -1, -2):
@@ -173,3 +174,24 @@ count_i_cells = np.sum(GRID == 'I')
 print(count_i_cells)
 
 # 349
+
+
+# (Just for fun) To visualise the loop:
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Define colors: red for 'O', green for 'I', and white for others
+colors = {'I': [0, 1, 0], 'O': [1, 0, 0]}  # RGB for green and red
+default_color = [1, 1, 1]  # RGB for white
+
+# Convert grid to a color map
+# grid = GRID # 0-width gaps
+grid = old_grid # visualises the gaps
+color_map = np.array([[colors.get(cell, default_color) for cell in row] for row in old_grid], dtype=float)
+
+# Create and show the image
+plt.imshow(color_map, interpolation='nearest')
+plt.axis('off')  # Turn off the axis
+plt.show()
