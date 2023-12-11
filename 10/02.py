@@ -1,8 +1,5 @@
 #! /usr/bin/env python3
-import re
-import math
 import numpy as np
-from collections import defaultdict
 from collections import deque
 
 # ==== INPUT ====
@@ -67,19 +64,17 @@ def get_starting_char(start_pos):
     return None
 
 # for current position, get valid steps from that position
-# [('down', (1, 2, '|')), ('right', (2, 1, '-'))]
 def get_possible_steps(position):
     x, y = position
-    char = GRID[y][x]
     neighbours = get_neighbours(position)
-    possible_steps = []
 
-    for direction in valid_steps[char]:
+    possible_steps = []
+    for direction in valid_steps[GRID[y][x]]:
         neighbour_x, neighbour_y = neighbours[direction]
         if (0 <= neighbour_x < GRID.shape[1]) and (0 <= neighbour_y < GRID.shape[0]):
             neighbour_char = GRID[neighbour_y][neighbour_x]
             if neighbour_char in valid_direction_chars[direction]:
-                possible_steps.append((direction, (neighbour_x, neighbour_y), GRID[neighbour_y][neighbour_x]))
+                possible_steps.append((neighbour_x, neighbour_y))
 
     return possible_steps
 
@@ -90,9 +85,7 @@ def find_loop(start_coord):
         (x, y), dist = queue.pop()
         visited[(x, y)] = dist
 
-        possible_steps = get_possible_steps((x, y))
-
-        for _, (new_x, new_y), _ in possible_steps:
+        for (new_x, new_y) in get_possible_steps((x, y)):
             if (new_x, new_y) not in visited:
                 queue.append(((new_x, new_y), dist + 1))
 
@@ -116,8 +109,8 @@ def fill_outside_of_loop(loop, fill_char='O'):
     exterior_point = (0, 0)
     flood_fill(*exterior_point)
 
-# determine start position value
-# - use equivalent char for 'S' in mapping
+# determine true start position value
+# use equivalent mappings as true value for 'S'
 s_index = np.where(GRID == 'S')
 initial_start  = (s_index[1][0], s_index[0][0])
 
@@ -137,14 +130,8 @@ for i in range(GRID.shape[0]):
         new_grid[i * 2, j * 2] = GRID[i, j]
 GRID = new_grid
 
-# find new start position after expanding
-s_index = np.where(GRID == 'S')
-START_POS  = (s_index[1][0], s_index[0][0])
-
-GRID[START_POS[1]][START_POS[0]] = START_CHAR
-
 # fill in gaps introduced by new rows/columns,
-# by extrapolating horiztonal/verticals with '-' and '|'
+# by extrapolating horizontal/verticals with '-' and '|'
 for y in range(1, GRID.shape[0]-1, 2):
     for x in range(GRID.shape[1]):
         up   = GRID[y-1][x]
@@ -158,6 +145,10 @@ for x in range(1, GRID.shape[1]-1, 2):
         right = GRID[y][x+1]
         if 'right' in valid_steps[left] and 'left' in valid_steps[right]:
             GRID[y][x] = '-'
+
+# find new start position after expanding
+s_index = np.where(GRID == 'S')
+START_POS = (s_index[1][0], s_index[0][0])
 
 main_loop = find_loop(START_POS)
 
@@ -173,9 +164,9 @@ fill_outside_of_loop(main_loop)
 # delete added rows and cols
 # (new border doesn't affect count, so is ignored)
 for index in range(GRID.shape[0] - 1, -1, -2):
-    GRID = np.delete(GRID, index, axis=0)  # Delete row
+    GRID = np.delete(GRID, index, axis=0)  # delete row
 for index in range(GRID.shape[1] - 1, -1, -2):
-    GRID = np.delete(GRID, index, axis=1)  # Delete column
+    GRID = np.delete(GRID, index, axis=1)  # delete column
 
 # count number of of filled cells in original grid
 count_i_cells = np.sum(GRID == 'I')
