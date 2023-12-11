@@ -63,28 +63,24 @@ def get_starting_char(start_pos):
     return None
 
 # for current position, get valid steps from that position
-# [('down', (1, 2, '|')), ('right', (2, 1, '-'))]
 def get_possible_steps(position):
     x, y = position
-    char = GRID[y][x]
     neighbours = get_neighbours(position)
-    possible_steps = []
 
-    for direction in valid_steps[char]:
+    possible_steps = []
+    for direction in valid_steps[GRID[y][x]]:
         neighbour_x, neighbour_y = neighbours[direction]
         if (0 <= neighbour_x < GRID.shape[1]) and (0 <= neighbour_y < GRID.shape[0]):
             neighbour_char = GRID[neighbour_y][neighbour_x]
             if neighbour_char in valid_direction_chars[direction]:
-                possible_steps.append((direction, (neighbour_x, neighbour_y), GRID[neighbour_y][neighbour_x]))
+                possible_steps.append((neighbour_x, neighbour_y))
 
     return possible_steps
 
 # find and set-up start position
 s_index = np.where(GRID == 'S')
 START_POS  = (s_index[1][0], s_index[0][0])
-
 GRID[START_POS[1]][START_POS[0]] = get_starting_char(START_POS)
-
 
 # navigate from starting point around the loop
 queue, visited = deque([(START_POS, 0)]), {} # (x, y): dist
@@ -96,7 +92,7 @@ while queue:
     if (x, y) == START_POS: # start in only 1 direction
         possible_steps = [possible_steps[1]]
 
-    for _, (new_x, new_y), _ in possible_steps:
+    for (new_x, new_y) in possible_steps:
         if (new_x, new_y) not in visited:
             queue.append(((new_x, new_y), dist + 1))
 
