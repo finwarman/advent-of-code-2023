@@ -29,9 +29,17 @@ def get_empty_col_rows(grid):
 
     return empty_rows, empty_cols
 
+
 def get_dist(a, b, empty_rows, empty_cols):
-    y_sum = abs(a[0] - b[0]) + sum([GRAVITY_MULTIPLIER-1 for x in range(*sorted((a[0], b[0]))) if x in empty_rows])
-    x_sum = abs(a[1] - b[1]) + sum([GRAVITY_MULTIPLIER-1 for x in range(*sorted((a[1], b[1]))) if x in empty_cols])
+    row_range = set(range(*sorted((a[0], b[0]))))
+    col_range = set(range(*sorted((a[1], b[1]))))
+
+    gravity_rows = len(row_range.intersection(empty_rows)) * (GRAVITY_MULTIPLIER - 1)
+    gravity_cols = len(col_range.intersection(empty_cols)) * (GRAVITY_MULTIPLIER - 1)
+
+    y_sum = abs(a[0] - b[0]) + gravity_rows
+    x_sum = abs(a[1] - b[1]) + gravity_cols
+
     return x_sum + y_sum
 
 def get_galaxy_pair_dists(arr, empty_rows, empty_cols):
