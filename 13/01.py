@@ -21,7 +21,7 @@ def array_flip(grid, cols):
         left_segment  = grid[:, i-window:i]
         right_segment = np.flip(grid[:, i:i+window], axis=1)
 
-        if np.array_equal(left_segment, right_segment):
+        if np.all(left_segment == right_segment):
             return i
     return None
 
