@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import functools
 import re
 import math
 import numpy as np
@@ -13,50 +14,86 @@ with open(INPUT, 'r', encoding='UTF-8') as file:
 
 rows = [row.strip().split(' ') for row in data.split('\n')[:-1]]
 
-springs = [list(row[0]) for row in rows]
-group_sizes = [[int(x) for x in row[1].split(',')] for row in rows]
+springs     = (tuple(row[0]) for row in rows)
+group_sizes = (tuple(int(x) for x in row[1].split(',')) for row in rows)
 
 # ==== SOLUTION ====
 
 OPERATIONAL, DAMAGED, UNKNOWN = ('.', '#', '?')
 
-def get_all_indexes(arr, value):
-    return [i for i, x in enumerate(arr) if x == value]
+ARRANGEMENT_CACHE = {}
 
-def is_valid(arrangement):
-    group_counts = [len(list(g)) for k, g in groupby(arrangement) if k == DAMAGED]
-    return group_counts == groups
+def get_valid_arrangements(springs, groups):
+    key = f"{springs}{groups}"
 
-def generate_combinations(length):
-    return [''.join(p) for p in product((OPERATIONAL, DAMAGED), repeat=length)]
+    # cache calls to this function
+    if key in ARRANGEMENT_CACHE:
+        return ARRANGEMENT_CACHE[key]
 
-def valid_replacements(springs, replacements, replace_indexes):
-    count = 0
-    for replacement in replacements:
-        for i, index in enumerate(replace_indexes):
-            springs[index] = replacement[i]
-        if is_valid(springs):
-            count += 1
-    return count
+    # there are more groups to process, but no space for them
+    if groups and not springs:
+        return 0
 
-rows = []
-for i, row in enumerate(springs):
-    groups = group_sizes[i]
-    unknown_indices = get_all_indexes(row, UNKNOWN)
-    unknown_count = len(unknown_indices)
+    # all groups are done, check if result is valid
+    if not groups:
+        if DAMAGED in springs:
+            return 0
+        return 1
 
-    rows.append((row, groups, unknown_count, unknown_indices))
+    curr_char, curr_group_size = springs[0], groups[0]
 
-total = 0
-for row in rows:
-    springs, groups, unknown_count, unknown_indices = row
-    replace_combos = generate_combinations(unknown_count)
+    def currentCharOperational():
+        # try the next spring, for the current group
+        return get_valid_arrangements(springs[1:], groups)
 
-    valid_count = valid_replacements(springs, replace_combos, unknown_indices)
-    total += valid_count
+    def currentCharDamaged():
+        # if current spring is damaged, then the rest of this group must
+        # be damaged and contiguous from the current spring
+
+        # there must be enough springs left to fill the group size
+        if len(springs) < curr_group_size:
+            return 0
+        # they must all be either 'damaged' or 'unknown'
+        if OPERATIONAL in springs[:curr_group_size]:
+            return 0
+
+        # current group is valid - we are done if this is the last gruop
+        if len(springs) == curr_group_size:
+            if len(groups) == 1:
+                return 1
+            # else, we can't fit any more groups
+            return 0
+
+        # the spring after a full group cannot be damaged, since groups
+        # are noncontiguous
+        if springs[curr_group_size] == DAMAGED:
+            return 0
+
+        # move on to next group, skipping to first character after this group
+        return get_valid_arrangements(springs[curr_group_size+1:], groups[1:])
+
+    def currentCharUnknown():
+        # recurse through both paths from this point
+        return currentCharDamaged() + currentCharOperational()
+
+    next_char_operations = {
+        UNKNOWN:     currentCharUnknown,
+        DAMAGED:     currentCharDamaged,
+        OPERATIONAL: currentCharOperational,
+    }
+
+    # recursively determine count of valid arrangements
+    total = next_char_operations[curr_char]()
+    ARRANGEMENT_CACHE[key] = total
+
+    return total
+
+
+total = sum(
+    get_valid_arrangements(springs, groups)
+    for springs, groups in zip(springs, group_sizes)
+)
 
 print(total)
 
 # 7047
-
-# TODO: this is very slow!
