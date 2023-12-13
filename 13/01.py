@@ -9,26 +9,23 @@ with open(INPUT, 'r', encoding='UTF-8') as file:
     data = file.read()
 
 data = data.replace('#', '1').replace('.', '0')
-sections = [row.strip()  for row in data.split('\n\n')]
-grids = [np.array([[int(x) for x in list(row)] for row in section.split('\n')]) for section in sections]
+grids = [np.array([list(map(int, row)) for row in section.strip().split('\n')])
+            for section in data.split('\n\n')]
 
 # ==== SOLUTION ====
 
 def array_flip(grid, cols):
     for i in range(1, cols):
-        if i > cols//2:
-            window = cols-i
-        else:
-            window = i
+        window = cols-i if (i > cols//2) else i
 
         left_segment  = grid[:, i-window:i]
         right_segment = np.flip(grid[:, i:i+window], axis=1)
+
         if np.array_equal(left_segment, right_segment):
             return i
     return None
 
 col_count, row_count = 0, 0
-
 for grid in grids:
     rows, cols = grid.shape
 
