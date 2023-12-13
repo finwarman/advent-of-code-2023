@@ -15,11 +15,12 @@ grids = [np.array([list(map(int, row)) for row in section.strip().split('\n')])
 # ==== SOLUTION ====
 
 def array_flip(grid, cols):
-    for i in range(1, cols):
-        window = cols-i if (i > cols//2) else i
+    flip = np.flip(grid, axis=1)
 
+    for i in range(1, cols):
+        window = min(i, cols - i)
         left_segment  = grid[:, i-window:i]
-        right_segment = np.flip(grid[:, i:i+window], axis=1)
+        right_segment = flip[:, cols-i-window:cols-i]
 
         if np.all(left_segment == right_segment):
             return i
