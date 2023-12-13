@@ -1,9 +1,4 @@
 #! /usr/bin/env python3
-import functools
-import re
-import math
-import numpy as np
-from itertools import groupby, product
 
 # ==== INPUT ====
 
@@ -14,7 +9,7 @@ with open(INPUT, 'r', encoding='UTF-8') as file:
 
 rows = [row.strip().split(' ') for row in data.split('\n')[:-1]]
 
-springs     = (tuple(row[0]) for row in rows)
+springs     = (row[0] for row in rows)
 group_sizes = (tuple(int(x) for x in row[1].split(',')) for row in rows)
 
 # ==== SOLUTION ====
