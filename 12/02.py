@@ -45,7 +45,8 @@ def get_valid_arrangements(springs, groups):
 
     def currentCharDamaged():
         # if current spring is damaged, then the rest of this group must
-        # be damaged and contiguous from the current spring
+        # be damaged and contiguous from the current spring, or the
+        # arrangement is invalid
 
         # there must be enough springs left to fill the group size
         if len(springs) < curr_group_size:
