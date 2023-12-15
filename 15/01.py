@@ -12,8 +12,6 @@ steps = input.split(',')
 
 # ==== SOLUTION ====
 
-# print(input)
-
 grand_total = 0
 for step in steps:
     total = 0
