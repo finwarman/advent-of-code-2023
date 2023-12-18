@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from shapely.geometry import Polygon
+import numpy as np
 
 # ==== INPUT ====
 
@@ -26,20 +26,32 @@ def times(tup1, x):
     return (tup1[0] * x, tup1[1] * x)
 
 pos = (0, 0)
-corner_points = [pos]
+corner_points = []
 
 for row in rows:
-    steps     = int(row[0], 16)
-    direction = DIR_MAP[row[1]]
-
+    steps, direction = int(row[0], 16), DIR_MAP[row[1]]
     pos = add(pos, times(direction, steps))
     corner_points.append(pos)
 
-polygon = Polygon(corner_points)
-full_polygon = polygon.buffer(+0.5, join_style='mitre')
+def shoelace_area(points):
+    points = np.array(points)
+    x, y = points[:, 0], points[:, 1]
+    return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
-area = int(full_polygon.area)
-
-print(area)
+area = shoelace_area(corner_points)
+print(int(area))
 
 # 72811019847283
+
+# -- non-numpy version --
+
+# def shoelace_area(points):
+#     n = len(points)
+#     area = 0.0
+
+#     for i in range(n - 1):
+#         x1, y1 = points[i]
+#         x2, y2 = points[i + 1]
+#         area += (x1 * y2) - (x2 * y1)
+
+#     return abs(area) / 2
