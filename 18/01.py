@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import numpy as np
+from shapely.geometry import Polygon, LinearRing
 
 # ==== INPUT ====
 
@@ -22,28 +22,44 @@ DIR_MAP = {'U': UP, 'D': DOWN, 'L': LEFT, 'R': RIGHT}
 def add(tup1, tup2):
     return (tup1[0]+tup2[0], tup1[1]+tup2[1])
 
-border = []
+def times(tup1, x):
+    return (tup1[0] * x, tup1[1] * x)
+
 pos = (0, 0)
+corner_points = [pos]
 
 for row in rows:
     steps = row[1]
     direction = DIR_MAP[row[0]]
 
-    for i in range(steps):
-        pos = add(pos, direction)
-        border.append(pos)
+    pos = add(pos, times(direction, steps))
+    corner_points.append(pos)
 
-seen  = set(border)
-queue = [(1, 1)]
-while queue:
-    x, y = queue.pop()
-    seen.add((x, y))
+polygon = Polygon(LinearRing(corner_points))
+full_polygon = polygon.buffer(+0.5, join_style='mitre')
 
-    for (dx, dy) in (UP, DOWN, LEFT, RIGHT):
-        nx, ny = x+dx, y+dy
-        if (nx, ny) not in seen:
-            queue.append((nx, ny))
+area = int(full_polygon.area)
 
-print(len(seen))
+print(area)
 
 # 48400
+
+# Bonus: render the polygon
+
+# import matplotlib.pyplot as plt
+
+# x, y = full_polygon.exterior.xy
+
+# # Create a plot
+# plt.figure()
+# plt.plot(x, y)
+
+# plt.gca().invert_yaxis()
+
+# # Set labels and title, if desired
+# plt.xlabel('X Coordinate')
+# plt.ylabel('Y Coordinate')
+# plt.title('Polygon Points')
+
+# # Show the plot
+# plt.show()
