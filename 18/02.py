@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from shapely.geometry import Polygon, LinearRing
+from shapely.geometry import Polygon
 
 # ==== INPUT ====
 
@@ -35,7 +35,7 @@ for row in rows:
     pos = add(pos, times(direction, steps))
     corner_points.append(pos)
 
-polygon = Polygon(LinearRing(corner_points))
+polygon = Polygon(corner_points)
 full_polygon = polygon.buffer(+0.5, join_style='mitre')
 
 area = int(full_polygon.area)
