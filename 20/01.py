@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-import json
-
 DEBUG = False
 def debug_print(*args, **kwargs):
     if DEBUG:
@@ -49,22 +47,13 @@ for row in rows:
     elif src_type == MOD_CONJUNCTION:
         conjuctions[src_name] = [dict(), dests]
 
-# populate conjunction dictionaries (for each flip flop/conjuction dest)
+# populate conjunction dictionaries (for each flip flop, no conjunctions needed)
 for key in flip_flops.keys():
     _, dests = flip_flops[key]
     for dest in dests:
         if dest in conjuctions:
             conjuctions[dest][0][key] = LOW
-# for key in conjuctions.keys():
-#     _, dests = conjuctions[key]
-#     for dest in dests:
-#         if dest in conjuctions:
-#             conjuctions[dest][0][key] = LOW
 
-# state string to sent_pulses
-states = {}
-break_cycle = None
-repeat_length = None
 final_cycle = 1000
 
 total_sent_pulses = {LOW: 0, HIGH: 0}
@@ -111,42 +100,8 @@ for cycle_no in range(final_cycle):
 
     debug_print()
 
-    # serialize state
-    state = json.dumps(flip_flops, sort_keys=True) + json.dumps(conjuctions, sort_keys=True)
-
-    # check for cycle
-    if state in states:
-        debug_print(f"Reached state before (currently on cycle #{cycle_no})")
-        break_cycle = cycle_no
-        repeat_length = cycle_no - states[state][2]  # Calculate repeat length
-        break  # Exit loop since we found a cycle
-
-    # save state with the cycle number and sent pulses counts
-    states[state] = (sent_pulses[LOW], sent_pulses[HIGH], cycle_no)
-
     total_sent_pulses[LOW] += sent_pulses[LOW]
     total_sent_pulses[HIGH] += sent_pulses[HIGH]
-
-# if a cycle was detected, skip repeats and calculate final values
-if break_cycle is not None:
-    remaining_cycles = final_cycle - break_cycle
-
-    # total pulses for one complete loop
-    loop_pulses = {
-        LOW: sum(state_info[0] for state_info in states.values() if state_info[2] < repeat_length),
-        HIGH: sum(state_info[1] for state_info in states.values() if state_info[2] < repeat_length)
-    }
-
-    #  getnumber of complete loops remaining and add the pulses
-    complete_loops = remaining_cycles // repeat_length
-    total_sent_pulses[LOW] += complete_loops * loop_pulses[LOW]
-    total_sent_pulses[HIGH] += complete_loops * loop_pulses[HIGH]
-
-    # add the pulses for the partial remaining loop (if required)
-    partial_loop_cycles = remaining_cycles % repeat_length
-    for cycle in range(partial_loop_cycles):
-        total_sent_pulses[LOW] += states[state][0]
-        total_sent_pulses[HIGH] += states[state][1]
 
 total_low, total_high = total_sent_pulses[LOW], total_sent_pulses[HIGH]
 print(f"Simulated {final_cycle} cycles:")
