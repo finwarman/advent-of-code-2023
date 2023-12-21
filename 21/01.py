@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import numpy as np
+from functools import cache
 
 # ==== INPUT ====
 
@@ -17,6 +18,7 @@ HEIGHT, WIDTH = GRID.shape
 PLOT, ROCKS = '.', '#'
 UP, DOWN, LEFT, RIGHT = (0,-1),(0,1),(-1,0),(1,0)
 
+@cache
 def neighbours(point):
     neighbours = []
     x, y = point
@@ -28,7 +30,7 @@ def neighbours(point):
                 neighbours.append((nx, ny))
     return neighbours
 
-start_pos = (np.array(np.where(GRID=='S')).T)[0][::-1]
+start_pos = tuple(np.argwhere(GRID == 'S')[0])
 x, y = start_pos
 
 GRID[y][x] = PLOT
@@ -36,19 +38,14 @@ GRID[y][x] = PLOT
 TARGET_STEPS = 64
 
 neighbour_map = {(x, y): neighbours((x, y))}
-step_count, candidates = 0, {(x, y)}
+candidates = {(x, y)}
 
 for step_no in range(TARGET_STEPS):
     new_neighbours = set()
     for (x, y) in candidates:
-        if (x, y) in neighbour_map:
-            new_neighbours.update(neighbour_map[(x, y)])
-        else:
-            new_neighbours.update(neighbours((x, y)))
-
+        new_neighbours.update(neighbour_map.get((x, y), neighbours((x, y))))
     candidates = new_neighbours
-    step_count = len(new_neighbours)
 
-print(step_count)
+print(len(new_neighbours))
 
 # 3617
