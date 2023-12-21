@@ -5,7 +5,6 @@ import math
 # ==== INPUT ====
 
 INPUT = 'input.txt'
-# INPUT = 'example.txt'
 with open(INPUT, 'r', encoding='UTF-8') as file:
     data = file.read()
 
@@ -40,6 +39,7 @@ for row in rows:
     elif src_type == '&':
         conjuctions[src_name] = [dict(), dests]
 
+
 # populate conjunction dictionaries (for each flip flop, no conjunctions needed)
 for key in flip_flops.keys():
     _, dests = flip_flops[key]
@@ -47,20 +47,24 @@ for key in flip_flops.keys():
         if dest in conjuctions:
             conjuctions[dest][0][key] = LOW
 
+# the end of each cycle (via an inverter) feeds into 'rx' (see graph in ./draw_graph)
+# find the inverter into rx, then find each of the inputs into that inverter
+rx_inverter_inputs, final_inverter = [], None
 
-# todo: determine this programmatically from what feeds into 'rx'
-target_highs = {
-    'mm': None,
-    'ff': None,
-    'lh': None,
-    'fk': None,
-}
+for key, (_, dests) in conjuctions.items():
+    if 'rx' in dests:
+        final_inverter = key
 
-# for each cycle (see graph in ./draw_graph) - get the number of button presses for output to be HIGH
+for key, (_, dests) in conjuctions.items():
+    if final_inverter in dests:
+        rx_inverter_inputs.append(key)
+
+# store the number of cycles for each rx-input-cycle to go HIGH
+target_highs = {src: None for src in rx_inverter_inputs}
+
+# for each cycle, get the number of button presses for output to be HIGH
 cycle_no = 0
 while any(value is None for value in target_highs.values()):
-    cycle_no += 1
-
     sent_pulses = {LOW: 0, HIGH: 0}
     queue = []
 
@@ -91,17 +95,18 @@ while any(value is None for value in target_highs.values()):
             elif dest in conjuctions:
                 # track earliest point for high output from input to 'rx'
                 if value == LOW and dest in target_highs and not target_highs.get(dest):
-                    target_highs[dest] = cycle_no
+                    target_highs[dest] = cycle_no + 1
 
                 conjuctions[dest][0][src] = value
                 queue.append(dest)
             else:
                 continue # dead end
 
+    cycle_no += 1
+
 # get lcm of cycles to overlap
 aligned_cycles = math.lcm(*target_highs.values())
 
 print(aligned_cycles)
 
-
-# 14252981424240 too low
+# 228282646835717
