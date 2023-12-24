@@ -26,8 +26,8 @@ for workflow in workflows:
             rating_key, comp_op, value = condition[0], condition[1], int(condition[2:])
             workflow_mappings[name].append((rating_key, comp_op, value, dest))
 
-    # final step (no conditional)
-    workflow_mappings[name].append((rules[-1],))
+    # final step - use dummy condition
+    workflow_mappings[name].append(('x', '>', 0, rules[-1]))
 
 RATING_KEYS   = ('x', 'm', 'a', 's')
 DEFAULT_RANGE = (1, 4001)
@@ -62,26 +62,20 @@ def get_accepted_condition_paths(workflow_mappings):
 
         for name, rule in workflow_mappings.items():
             for i, test in enumerate(rule):
+                rating_key, comp_op, value, dest = test
+
                 # conditions with dest of current workflow only
-                if test[-1] != curr_workflow:
+                if dest != curr_workflow:
                     continue
 
-                if len(test) == 1:
-                    # this is a final step (no conditionals)
-                    false_conditions = get_false_conditions(rule[:i])
-                    new_conditions = conditions + false_conditions
-                    queue.append((name, new_conditions))
-                else:
-                    # this is an intermediate step with conditions
-                    rating_key, comp_op, value, _ = test
-                    curr_condition = (rating_key, comp_op, value)
+                curr_condition = (rating_key, comp_op, value)
 
-                    # get negations of conditions up to current rule
-                    # (x>10 -> x<11, etc.)
-                    false_conditions = get_false_conditions(rule[:i])
+                # get negations of conditions up to current rule
+                # (x>10 -> x<11, etc.)
+                false_conditions = get_false_conditions(rule[:i])
 
-                    new_conditions = conditions + false_conditions + [curr_condition]
-                    queue.append((name, new_conditions))
+                new_conditions = conditions + false_conditions + [curr_condition]
+                queue.append((name, new_conditions))
 
     return valid_paths
 
