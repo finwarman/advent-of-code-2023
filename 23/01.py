@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import numpy as np
+from functools import cache
 
 # ==== INPUT ====
 
@@ -25,7 +26,8 @@ TARGET_POS = (WIDTH-2, HEIGHT-1)
 # find the longest path, never step onto same tile twice
 # if you step onto a slope tile, next step must be 'downhill'
 
-def get_valid_neighbours(pos, seen):
+@cache
+def get_all_neighbours(pos):
     x, y = pos
     char = GRID[y][x]
     neighbours = []
@@ -34,19 +36,20 @@ def get_valid_neighbours(pos, seen):
     elif char in SLOPE_DIRS:
         dx, dy = SLOPE_DIRS[char]
         neighbours.append((x+dx, y+dy))
-    valid_neighbours = []
+    new_neighbours = []
     for neighbour in neighbours:
         nx, ny = neighbour
-        if neighbour in seen:
-            continue
         if nx < 0 or nx >= WIDTH:
             continue
         if ny < 0 or ny >= HEIGHT:
             continue
         if GRID[ny][nx] == FOREST:
             continue
-        valid_neighbours.append(neighbour)
-    return valid_neighbours
+        new_neighbours.append(neighbour)
+    return new_neighbours
+
+def get_valid_neighbours(pos, seen):
+    return [n for n in get_all_neighbours(pos) if (n not in seen)]
 
 # dfs, stack: [ (position, current path length, seen positions), ]
 max_length = 0
